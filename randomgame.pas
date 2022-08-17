@@ -1,6 +1,7 @@
 program randomgame;
 {$mode objfpc}{$H+}
-uses Classes, SysUtils, fgl, math, StrUtils, LCLIntF, zxgfxw;
+uses Classes, SysUtils, fgl, math, StrUtils, LCLIntF, httpsend, ssl_openssl,
+  zxgfxw;
 
 type
   PGameEntry = ^TGameEntry;
@@ -36,6 +37,24 @@ begin
   begin
     c := Chr(RandomRange(32,127));
     Result := Result + c;
+  end;
+end;
+
+procedure DownloadFile(url: String);
+var
+  fo: TFileStream;
+begin
+  with THTTPSend.Create do
+  begin
+    if HTTPMethod('GET',url) then
+    try
+      fo := TFileStream.Create('tmp.zip',fmCreate);
+      fo.CopyFrom(Document,Document.Size);
+      fo.Free;
+    except
+
+    end;
+    Free;
   end;
 end;
 
@@ -116,7 +135,8 @@ begin
     if Uppercase(c) = 'Q' then running := false;
     if c = '1' then
     begin
-      OpenURL(BASEURL + IntToStr(gp^.id));
+      //OpenURL(BASEURL + IntToStr(gp^.id));
+      DownloadFile('https://spectrumcomputing.co.uk/pub/sinclair/games/l/LicenceToKill.tzx.zip');
     end;
   end;
 
