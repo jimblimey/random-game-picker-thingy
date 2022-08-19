@@ -1,6 +1,6 @@
 program randomgame;
 {$mode objfpc}{$H+}
-uses Classes, SysUtils, fgl, math, StrUtils, LCLIntF, httpsend, ssl_openssl,
+uses Classes, SysUtils, fgl, math, StrUtils, LCLIntF, httpsend, ssl_openssl3,
   zxgfxw;
 
 type
@@ -17,7 +17,7 @@ type
   TIntegerList = specialize TFPGList<Integer>;
   
 const
-  BASEURL = 'https://spectrumcomputing.co.uk/index.php?cat=96&id=';
+  BASEURL = 'https://spectrumcomputing.co.uk/';
 
 procedure CentreText(y: Integer; s: String; cl: Integer);
 var
@@ -44,15 +44,17 @@ procedure DownloadFile(url: String);
 var
   fo: TFileStream;
 begin
+  writeln(url);
   with THTTPSend.Create do
   begin
     if HTTPMethod('GET',url) then
     try
-      fo := TFileStream.Create('tmp.zip',fmCreate);
+      fo := TFileStream.Create('/tmp/tmp.zip',fmCreate);
+      writeln(Document.Size);
       fo.CopyFrom(Document,Document.Size);
       fo.Free;
     except
-
+      writeln('poo');
     end;
     Free;
   end;
@@ -127,7 +129,7 @@ begin
     gp := games[r];
     CentreText(10,gp^.title,RED);
     CentreText(11,gp^.genre,BLUE);
-    CentreText(13,'1 TO OPEN WEBSITE',WHITE);
+    CentreText(13,'1 TO DOWNLOAD',WHITE);
     CentreText(22,'PRESS SPACE TO PICK AGAIN', BLACK);
     CentreText(23,'OR Q TO QUIT',BLACK);
     c := #0;
@@ -136,7 +138,7 @@ begin
     if c = '1' then
     begin
       //OpenURL(BASEURL + IntToStr(gp^.id));
-      DownloadFile('https://spectrumcomputing.co.uk/pub/sinclair/games/l/LicenceToKill.tzx.zip');
+      DownloadFile(BASEURL + gp^.filelink);
     end;
   end;
 
