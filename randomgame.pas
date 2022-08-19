@@ -1,6 +1,6 @@
 program randomgame;
 {$mode objfpc}{$H+}
-uses Classes, SysUtils, fgl, math, StrUtils, LCLIntF, httpsend, ssl_openssl3,
+uses Classes, SysUtils, math, StrUtils, LCLIntF, httpsend, ssl_openssl, Zipper,
   zxgfxw;
 
 type
@@ -14,7 +14,6 @@ type
     filelink: String;
     filetype: Integer;
   end;
-  TIntegerList = specialize TFPGList<Integer>;
   
 const
   BASEURL = 'https://spectrumcomputing.co.uk/';
@@ -40,40 +39,49 @@ begin
   end;
 end;
 
+procedure ExtractFile(fname: String);
+var
+  uz: TUnZipper;
+begin
+  uz := TUnZipper.Create;
+  uz.FileName := fname;
+  uz.OutputPath := '.\tapes';
+  uz.Examine;
+  uz.UnZipAllFiles;
+  uz.Free;
+end;
+
 procedure DownloadFile(url: String);
 var
-  fo: TFileStream;
+  http: THTTPSend;
 begin
-  writeln(url);
-  with THTTPSend.Create do
-  begin
-    if HTTPMethod('GET',url) then
-    try
-      fo := TFileStream.Create('/tmp/tmp.zip',fmCreate);
-      writeln(Document.Size);
-      fo.CopyFrom(Document,Document.Size);
-      fo.Free;
-    except
-      writeln('poo');
+  http := THTTPSend.Create;
+  try
+    http.UserAgent := 'Mozilla/5.0 (X11; FreeBSD amd64; rv:103.0) Engine:Blink Firefox/103.0';
+    http.HTTPMethod('GET', URL);
+    if (http.ResultCode >= 100) and (http.ResultCode<=299) then
+    begin
+      http.Document.SaveToFile('tmp.zip');
+      ExtractFile('tmp.zip');
+      DeleteFile('tmp.zip');
     end;
-    Free;
+  finally
+    http.Free;
   end;
 end;
 
 procedure main;
 var
   fi: TStrings;
-  UsedIDs: TIntegerList;
   games: TList;
   st: TStringArray;
   gp: PGameEntry;
-  i,j,r: Integer;
+  i,r: Integer;
   running: Boolean;
   c: Char;
-  s: String;
   keys: set of Char = ['1','Q',' '];
 begin
-  UsedIDs := TIntegerList.Create;
+  if not DirectoryExists('.\tapes') then mkdir('.\tapes');
   games := TList.Create;
   fi := TStringList.Create;
   fi.LoadFromFile('zxdbdump.txt');
@@ -98,52 +106,42 @@ begin
   while running do
   begin
     Border(MAGENTA);
-    Cls(CYAN);
-    CentreText(0,'JIM BLIMEY''S',BLUE);
-    CentreText(1,'RANDOM',YELLOW);
-    CentreText(2,'GAME',RED);
-    CentreText(3,'PICKER THINGY',MAGENTA);
-    CentreText(10,'PRESS SPACE TO PICK A GAME', BLACK);
+    Cls(BLACK);
+    CentreText(0,'JIM BLIMEY''S',BRIGHTMAGENTA);
+    CentreText(1,'RANDOM',BRIGHTYELLOW);
+    CentreText(2,'GAME',BRIGHTCYAN);
+    CentreText(3,'PICKER THINGY',BRIGHTGREEN);
+    CentreText(10,'PRESS SPACE TO PICK A GAME', BRIGHTWHITE);
     c := #0;
     while c <> ' ' do
     begin
       c := InkeyW;
     end;
-    CentreText(10,Padleft('',30),CYAN);
+    CentreText(10,Padleft('',30),BRIGHTCYAN);
     r := Random(fi.Count);
-    j := 0;
-    repeat
-      for i := 0 to UsedIDs.Count -1 do
-      begin
-        if r = UsedIDs[i] then j := 1;
-      end;
-    until j = 0;
-    UsedIDs.Add(r);
     for i := 0 to 99 do
     begin
       CentreText(10,RandomString(14),Random(15));
       UpdateScreen;
       sleep(10);
     end;
-    CentreText(10,Padleft('',16),CYAN);
+    CentreText(10,Padleft('',16),BRIGHTCYAN);
     gp := games[r];
-    CentreText(10,gp^.title,RED);
-    CentreText(11,gp^.genre,BLUE);
-    CentreText(13,'1 TO DOWNLOAD',WHITE);
-    CentreText(22,'PRESS SPACE TO PICK AGAIN', BLACK);
-    CentreText(23,'OR Q TO QUIT',BLACK);
+    CentreText(10,gp^.title,CYAN);
+    CentreText(11,gp^.genre,YELLOW);
+    CentreText(13,'1 TO DOWNLOAD',BRIGHTWHITE);
+    CentreText(22,'PRESS SPACE TO PICK AGAIN', BRIGHTGREEN);
+    CentreText(23,'OR Q TO QUIT',BRIGHTRED);
     c := #0;
     while not (c in keys) do c := InkeyW;
     if Uppercase(c) = 'Q' then running := false;
     if c = '1' then
     begin
-      //OpenURL(BASEURL + IntToStr(gp^.id));
       DownloadFile(BASEURL + gp^.filelink);
     end;
   end;
 
   fi.Free;
-  UsedIDs.Free;
   games.Free;
 end;
 
