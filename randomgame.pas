@@ -17,6 +17,7 @@ type
   
 const
   BASEURL = 'https://spectrumcomputing.co.uk/';
+  ZXDBUPD = '28/01/23';
 
 procedure CentreText(y: Integer; s: String; cl: Integer);
 var
@@ -112,6 +113,8 @@ begin
     CentreText(2,'GAME',BRIGHTCYAN);
     CentreText(3,'PICKER THINGY',BRIGHTGREEN);
     CentreText(10,'PRESS SPACE TO PICK A GAME', BRIGHTWHITE);
+    PrintAt(0,23,fi.Count.ToString + ' games from ZXDB',BRIGHTYELLOW);
+    PrintAt(24,23,ZXDBUPD,GREEN);
     c := #0;
     while c <> ' ' do
     begin
@@ -129,13 +132,14 @@ begin
     gp := games[r];
     CentreText(10,gp^.title,CYAN);
     CentreText(11,gp^.genre,YELLOW);
-    CentreText(13,'1 TO DOWNLOAD',BRIGHTWHITE);
-    CentreText(22,'PRESS SPACE TO PICK AGAIN', BRIGHTGREEN);
-    CentreText(23,'OR Q TO QUIT',BRIGHTRED);
+    CentreText(12,gp^.year.ToString,BRIGHTBLUE);
+    PrintAt(0,23,fi.Count.ToString + ' games from ZXDB',BRIGHTYELLOW);
+    PrintAt(24,23,ZXDBUPD,GREEN);
+    CentreText(18,'(D)ownload, (Q)uit or SPACE  ',BRIGHTWHITE);
     c := #0;
     while not (c in keys) do c := InkeyW;
     if Uppercase(c) = 'Q' then running := false;
-    if c = '1' then
+    if Uppercase(c) = 'D' then
     begin
       DownloadFile(BASEURL + gp^.filelink);
     end;

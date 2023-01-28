@@ -352,7 +352,7 @@ var
   i,j,z: Integer;
   pixels: PUint32;
 begin
-  if (x < 0) or (x + (w*8) > 255) or (y < 0) or (y + (h*8) > 192) then exit;
+  if (x < 0) or (x + (w*8) > 256) or (y < 0) or (y + (h*8) > 192) then exit;
   pixels := surface.lock;  
   z := 0;
   for i := 0 to w -1 do
