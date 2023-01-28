@@ -1,7 +1,7 @@
 program randomgame;
 {$mode objfpc}{$H+}
-uses Classes, SysUtils, math, StrUtils, LCLIntF, httpsend, ssl_openssl, Zipper,
-  zxgfxw;
+uses Classes, SysUtils, math, StrUtils, LCLIntF, IniFiles, httpsend, ssl_openssl,
+  Zipper, zxgfxw;
 
 type
   PGameEntry = ^TGameEntry;
@@ -71,6 +71,34 @@ begin
   end;
 end;
 
+procedure ShowOptions;
+begin
+  while true do
+  begin
+    Border(WHITE);
+    CLS(WHITE);
+    CentreText(0,'PROGRAM OPTIONS',BLACK);
+
+    PrintAt(0, 2,'(A) Border colour      [3]',BLACK);
+    PrintAt(0, 3,'(B) Paper colour       [0]',BLACK);
+    PrintAt(0, 4,'(C) Title 1 colour    [10]',BLACK);
+    PrintAt(0, 5,'(D) Title 2 colour    [13]',BLACK);
+    PrintAt(0, 6,'(E) Title 3 colour    [12]',BLACK);
+    PrintAt(0, 7,'(F) Title 4 colour    [11]',BLACK);
+    PrintAt(0, 8,'(G) Command colour    [15]',BLACK);
+    PrintAt(0, 9,'(H) Game title colour  [5]',BLACK);
+    PrintAt(0,10,'(I) Genre colour       [6]',BLACK);
+    PrintAt(0,11,'(J) Year colour        [1]',BLACK);
+    PrintAt(0,11,'(K) Game count colour [14]',BLACK);
+    PrintAt(0,12,'(K) ZXDB date  colour  [4]',BLACK);
+    PrintAt(0,14,'(M) Save tapes location', BLACK);
+    PrintAt(0,15,'[.\tapes]',BLACK);
+    PrintAt(0,23,'(X) Exit (2) Games options',BLACK,false,true);
+    UpdateScreen;
+    if InkeyW = 'Q' then break;
+  end;
+end;
+
 procedure main;
 var
   fi: TStrings;
@@ -80,7 +108,7 @@ var
   i,r: Integer;
   running: Boolean;
   c: Char;
-  keys: set of Char = ['1','Q',' '];
+  keys: set of Char = ['1','Q',' ','O'];
 begin
   if not DirectoryExists('.\tapes') then mkdir('.\tapes');
   games := TList.Create;
@@ -143,6 +171,8 @@ begin
     begin
       DownloadFile(BASEURL + gp^.filelink);
     end;
+    //if Uppercase(c) = 'O' then running := false;
+    if Uppercase(c) = 'O' then ShowOptions;
   end;
 
   fi.Free;

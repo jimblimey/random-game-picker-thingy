@@ -407,7 +407,7 @@ begin
   t := y * 8;
   for i := 1 to Length(s) do
   begin
-    DrawGraphic(l,t,1,1,cl,ZXFont[Ord(s[i])], over);
+    DrawGraphic(l,t,1,1,cl,ZXFont[Ord(s[i])], over, inv);
     inc(l,8);
   end;
   UpdateScreen;
