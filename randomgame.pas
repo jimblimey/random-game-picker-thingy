@@ -56,6 +56,7 @@ procedure DownloadFile(url: String);
 var
   http: THTTPSend;
 begin
+  Cls(5);
   http := THTTPSend.Create;
   try
     http.UserAgent := 'Mozilla/5.0 (X11; FreeBSD amd64; rv:103.0) Engine:Blink Firefox/103.0';
@@ -65,13 +66,27 @@ begin
       http.Document.SaveToFile('tmp.zip');
       ExtractFile('tmp.zip');
       DeleteFile('tmp.zip');
-    end;
+    end
+    else PrintAt(0,19,http.ResultString,WHITE);
   finally
     http.Free;
   end;
 end;
 
+procedure ShowDatabaseOptions;
+begin
+  Border(0);
+  Cls(0);
+  CentreText(0,'DATABASE OPTIONS',GREEN);
+  PrintAt(0,2,'(A) Start year       []',GREEN);
+  PrintAt(0,3,'(B) End year         []',GREEN);
+  UpdateScreen;
+  InkeyW;
+end;
+
 procedure ShowOptions;
+var
+  c: Char;
 begin
   while true do
   begin
@@ -95,7 +110,9 @@ begin
     PrintAt(0,15,'[.\tapes]',BLACK);
     PrintAt(0,23,'(X) Exit (2) Games options',BLACK,false,true);
     UpdateScreen;
-    if InkeyW = 'Q' then break;
+    c := InkeyW;
+    if c = 'X' then break;
+    if c = '2' then ShowDatabaseOptions;
   end;
 end;
 
@@ -108,7 +125,7 @@ var
   i,r: Integer;
   running: Boolean;
   c: Char;
-  keys: set of Char = ['1','Q',' ','O'];
+  keys: set of Char = ['1','Q',' ','O','D'];
 begin
   if not DirectoryExists('.\tapes') then mkdir('.\tapes');
   games := TList.Create;
@@ -141,8 +158,8 @@ begin
     CentreText(2,'GAME',BRIGHTCYAN);
     CentreText(3,'PICKER THINGY',BRIGHTGREEN);
     CentreText(10,'PRESS SPACE TO PICK A GAME', BRIGHTWHITE);
-    PrintAt(0,23,fi.Count.ToString + ' games from ZXDB',BRIGHTYELLOW);
-    PrintAt(24,23,ZXDBUPD,GREEN);
+    //PrintAt(0,23,fi.Count.ToString + ' games from ZXDB',BRIGHTYELLOW);
+    //PrintAt(24,23,ZXDBUPD,GREEN);
     c := #0;
     while c <> ' ' do
     begin
@@ -161,11 +178,10 @@ begin
     CentreText(10,gp^.title,CYAN);
     CentreText(11,gp^.genre,YELLOW);
     CentreText(12,gp^.year.ToString,BRIGHTBLUE);
-    PrintAt(0,23,fi.Count.ToString + ' games from ZXDB',BRIGHTYELLOW);
-    PrintAt(24,23,ZXDBUPD,GREEN);
+    //PrintAt(0,23,fi.Count.ToString + ' games from ZXDB',BRIGHTYELLOW);
+    //PrintAt(24,23,ZXDBUPD,GREEN);
     CentreText(18,'(D)ownload, (Q)uit or SPACE  ',BRIGHTWHITE);
-    c := #0;
-    while not (c in keys) do c := InkeyW;
+    c := InkeyW;
     if Uppercase(c) = 'Q' then running := false;
     if Uppercase(c) = 'D' then
     begin
