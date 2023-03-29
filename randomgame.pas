@@ -73,6 +73,21 @@ begin
   end;
 end;
 
+procedure SaveLog(s: String);
+var
+  fo: TStrings;
+  fn: String;
+  t: String;
+begin
+  fo := TStringList.Create;
+  DateTimeToString(t,'yyyy-mm-dd',Now);
+  fn := 'log-' + t + '.txt';
+  if FileExists(fn) then fo.LoadFromFile(fn);
+  fo.Add(s);
+  fo.SaveToFile(fn);
+  fo.Free;
+end;
+
 procedure ShowDatabaseOptions;
 begin
   Border(0);
@@ -177,7 +192,7 @@ begin
     gp := games[r];
     CentreText(10,gp^.title,CYAN);
     CentreText(11,gp^.genre,YELLOW);
-    CentreText(12,gp^.year.ToString,BRIGHTBLUE);
+    if gp^.year > 1900 then CentreText(12,gp^.year.ToString,BRIGHTBLUE);
     //PrintAt(0,23,fi.Count.ToString + ' games from ZXDB',BRIGHTYELLOW);
     //PrintAt(24,23,ZXDBUPD,GREEN);
     CentreText(18,'(D)ownload, (Q)uit or SPACE  ',BRIGHTWHITE);
@@ -186,6 +201,7 @@ begin
     if Uppercase(c) = 'D' then
     begin
       DownloadFile(BASEURL + gp^.filelink);
+      SaveLog(gp^.title);
     end;
     //if Uppercase(c) = 'O' then running := false;
     if Uppercase(c) = 'O' then ShowOptions;
