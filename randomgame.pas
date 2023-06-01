@@ -16,6 +16,7 @@ type
   end;
 
 var
+  history: TStrings;
 {$I 4x8font.inc}
   
 const
@@ -75,6 +76,32 @@ begin
   uz.Examine;
   uz.UnZipAllFiles;
   uz.Free;
+end;
+
+function CheckHistory(id: Integer): Boolean;
+var
+  i: Integer;
+begin
+  //Result := true;
+  if id = 0 then
+    Result := true
+  else
+  begin
+    Result := true;
+    for i := 0 to history.Count -1 do
+    begin
+      if StrToIntDef(history[i],0) = id then Result := false;
+    end;
+  end;
+end;
+
+procedure AddHistory(id: Integer);
+begin
+  if CheckHistory(id) then
+  begin
+    history.Add(id.ToString);
+    history.SaveToFile('history.txt');
+  end;
 end;
 
 procedure DownloadFile(url: String);
@@ -186,9 +213,11 @@ begin
     c := InkeyW;
     exit;
   end;
+  if FileExists('history.txt') then history.LoadFromFile('history.txt');
   games := TList.Create;
   fi := TStringList.Create;
   fi.LoadFromFile('zxdbdump.txt');
+  r := 0;
   for i := 0 to fi.Count -1 do
   begin
     st := fi[i].Split('|');
@@ -226,13 +255,16 @@ begin
       c := InkeyW;
     end;
     CentreText(10,Padleft('',30),BRIGHTCYAN);
-    r := Random(fi.Count);
-    for i := 0 to 99 do
-    begin
-      CentreText(10,RandomString(14),Random(15));
-      UpdateScreen;
-      sleep(10);
-    end;
+    repeat
+      for i := 0 to 99 do
+      begin
+        r := Random(fi.Count);
+        CentreText(10,RandomString(14),Random(15));
+        UpdateScreen;
+        sleep(10);
+      end;
+    until CheckHistory(r);
+    AddHistory(r);
     CentreText(10,Padleft('',16),BRIGHTCYAN);
     gp := games[r];
     if Length(gp^.title) < 32 then CentreText(10,gp^.title,CYAN)
@@ -246,8 +278,9 @@ begin
     begin
       DownloadFile(BASEURL + gp^.filelink);
       SaveLog(gp^.title);
+      AddHistory(gp^.id);
     end;
-    if Uppercase(c) = 'O' then ShowOptions;
+    //if Uppercase(c) = 'O' then ShowOptions;
   end;
 
   fi.Free;
@@ -256,7 +289,9 @@ end;
 
 begin
   Randomize;
+  history := TStringList.Create;
   InitialiseWindow('Jim Blimey''s Random Game Picker Thingy');
   main;
   CloseWindow;
+  history.Free;
 end.
