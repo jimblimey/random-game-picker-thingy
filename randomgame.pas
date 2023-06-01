@@ -17,7 +17,7 @@ type
   
 const
   BASEURL = 'https://spectrumcomputing.co.uk/';
-  ZXDBUPD = '28/01/23';
+  ZXDBUPD = '1.0.157';
 
 procedure CentreText(y: Integer; s: String; cl: Integer);
 var
@@ -143,6 +143,16 @@ var
   keys: set of Char = ['1','Q',' ','O','D'];
 begin
   if not DirectoryExists('.\tapes') then mkdir('.\tapes');
+  if not FileExists('zxdbdump.txt') then
+  begin
+    Border(2);
+    Cls(0);
+    CentreText(0,'ERROR',BRIGHTRED);
+    CentreText(11,'Database file not found!',BRIGHTWHITE);
+    CentreText(23,'Press any key to exit',BRIGHTWHITE);
+    c := InkeyW;
+    exit;
+  end;
   games := TList.Create;
   fi := TStringList.Create;
   fi.LoadFromFile('zxdbdump.txt');
@@ -173,8 +183,8 @@ begin
     CentreText(2,'GAME',BRIGHTCYAN);
     CentreText(3,'PICKER THINGY',BRIGHTGREEN);
     CentreText(10,'PRESS SPACE TO PICK A GAME', BRIGHTWHITE);
-    //PrintAt(0,23,fi.Count.ToString + ' games from ZXDB',BRIGHTYELLOW);
-    //PrintAt(24,23,ZXDBUPD,GREEN);
+    PrintAt(0,23,fi.Count.ToString + ' games from ZXDB',BRIGHTYELLOW);
+    PrintAt(24,23,ZXDBUPD,GREEN);
     c := #0;
     while c <> ' ' do
     begin
