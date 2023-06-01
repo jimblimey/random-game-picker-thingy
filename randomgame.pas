@@ -14,10 +14,27 @@ type
     filelink: String;
     filetype: Integer;
   end;
+
+var
+{$I 4x8font.inc}
   
 const
   BASEURL = 'https://spectrumcomputing.co.uk/';
   ZXDBUPD = '1.0.157';
+
+procedure PrintAt64(x: Integer; y: Integer; s: String; cl: Integer);
+var
+  i,t,l: Integer;
+begin
+  l := x * 4;
+  t := y * 8;
+  for i := 1 to Length(s) do
+  begin
+    DrawGraphic(l, t, 1, 1, cl, font64[Ord(s[i])], true);
+    inc(l,4);
+  end;
+  UpdateScreen;
+end;
 
 procedure CentreText(y: Integer; s: String; cl: Integer);
 var
@@ -25,6 +42,14 @@ var
 begin
   x := 16-(Length(s) div 2);
   PrintAt(x,y,s,cl);
+end;
+
+procedure CentreText64(y: Integer; s: String; cl: Integer);
+var
+  x: Integer;
+begin
+  x := 32-(Length(s) div 2);
+  PrintAt64(x,y,s,cl);
 end;
 
 function RandomString(maxlen: Integer): String;
@@ -57,6 +82,7 @@ var
   http: THTTPSend;
 begin
   Cls(5);
+  PrintAt64(0,0,'Downloading '+url+'...',BRIGHTGREEN);
   http := THTTPSend.Create;
   try
     http.UserAgent := 'Mozilla/5.0 (X11; FreeBSD amd64; rv:103.0) Engine:Blink Firefox/103.0';
@@ -66,8 +92,14 @@ begin
       http.Document.SaveToFile('tmp.zip');
       ExtractFile('tmp.zip');
       DeleteFile('tmp.zip');
+      CentreText(11,'OK!',BRIGHTGREEN);
     end
-    else PrintAt(0,19,http.ResultString,WHITE);
+    else
+    begin
+      PrintAt64(0,2,http.ResultString,BRIGHTRED);
+      InkeyW;
+      CentreText(11,'Press a key',BLACK);
+    end;
   finally
     http.Free;
   end;
@@ -140,6 +172,7 @@ var
   i,r: Integer;
   running: Boolean;
   c: Char;
+  s: String;
   keys: set of Char = ['1','Q',' ','O','D'];
 begin
   if not DirectoryExists('.\tapes') then mkdir('.\tapes');
@@ -183,11 +216,13 @@ begin
     CentreText(2,'GAME',BRIGHTCYAN);
     CentreText(3,'PICKER THINGY',BRIGHTGREEN);
     CentreText(10,'PRESS SPACE TO PICK A GAME', BRIGHTWHITE);
-    PrintAt(0,23,fi.Count.ToString + ' games from ZXDB',BRIGHTYELLOW);
-    PrintAt(24,23,ZXDBUPD,GREEN);
+    PrintAt64(0,23, fi.Count.ToString + ' games',BRIGHTYELLOW);
+    s := 'ZXDB ver ' + ZXDBUPD;
+    PrintAt64(63-Length(s),23,s,GREEN);
     c := #0;
     while c <> ' ' do
     begin
+      if Uppercase(C) = 'Q' then exit;
       c := InkeyW;
     end;
     CentreText(10,Padleft('',30),BRIGHTCYAN);
@@ -200,11 +235,10 @@ begin
     end;
     CentreText(10,Padleft('',16),BRIGHTCYAN);
     gp := games[r];
-    CentreText(10,gp^.title,CYAN);
+    if Length(gp^.title) < 32 then CentreText(10,gp^.title,CYAN)
+    else CentreText64(10,gp^.title,CYAN);
     CentreText(11,gp^.genre,YELLOW);
     if gp^.year > 1900 then CentreText(12,gp^.year.ToString,BRIGHTBLUE);
-    //PrintAt(0,23,fi.Count.ToString + ' games from ZXDB',BRIGHTYELLOW);
-    //PrintAt(24,23,ZXDBUPD,GREEN);
     CentreText(18,'(D)ownload, (Q)uit or SPACE  ',BRIGHTWHITE);
     c := InkeyW;
     if Uppercase(c) = 'Q' then running := false;
@@ -213,7 +247,6 @@ begin
       DownloadFile(BASEURL + gp^.filelink);
       SaveLog(gp^.title);
     end;
-    //if Uppercase(c) = 'O' then running := false;
     if Uppercase(c) = 'O' then ShowOptions;
   end;
 
