@@ -17,6 +17,8 @@ type
 
 var
   history: TStrings;
+  TapeDir: String;
+  // ~/Library/Application Support/MyApp/
 {$I 4x8font.inc}
   
 const
@@ -202,7 +204,7 @@ var
   s: String;
   keys: set of Char = ['1','Q',' ','O','D'];
 begin
-  if not DirectoryExists('tapes') then mkdir('tapes');
+  if not DirectoryExists(TapeDir) then mkdir(TapeDir);
   if not FileExists('zxdbdump.txt') then
   begin
     Border(2);
@@ -289,6 +291,12 @@ end;
 
 begin
   Randomize;
+{$IFDEF Darwin}
+  TapeDir := GetUserDir + 'tapes/';
+{$ELSE}
+  TapeDir := '.' + PathDelim + 'tapes' + PathDelim;
+{$ENDIF}
+  writeln(GetAppConfigDir(false));
   history := TStringList.Create;
   InitialiseWindow('Jim Blimey''s Random Game Picker Thingy');
   main;
