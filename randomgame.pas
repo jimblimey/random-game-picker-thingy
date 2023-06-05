@@ -1,7 +1,7 @@
 program randomgame;
 {$mode objfpc}{$H+}
-uses Classes, SysUtils, math, StrUtils, LCLIntF, IniFiles, httpsend, ssl_openssl,
-  Zipper, zxgfxw;
+uses Classes, SysUtils, math, StrUtils, LCLIntF, IniFiles, opensslsockets,
+  ssockets, sslsockets, fphttpclient, Zipper, zxgfxw;
 
 type
   PGameEntry = ^TGameEntry;
@@ -72,7 +72,7 @@ var
 begin
   uz := TUnZipper.Create;
   uz.FileName := fname;
-  uz.OutputPath := '.\tapes';
+  uz.OutputPath := 'tapes';
   uz.Examine;
   uz.UnZipAllFiles;
   uz.Free;
@@ -106,30 +106,30 @@ end;
 
 procedure DownloadFile(url: String);
 var
-  http: THTTPSend;
+  //http: THTTPSend;
+  http: TFPHttpClient;
 begin
   Cls(5);
+  writeln(url);
   PrintAt64(0,0,'Downloading '+url+'...',BRIGHTGREEN);
-  http := THTTPSend.Create;
-  try
-    http.UserAgent := 'Mozilla/5.0 (X11; FreeBSD amd64; rv:103.0) Engine:Blink Firefox/103.0';
-    http.HTTPMethod('GET', URL);
-    if (http.ResultCode >= 100) and (http.ResultCode<=299) then
-    begin
-      http.Document.SaveToFile('tmp.zip');
-      ExtractFile('tmp.zip');
-      DeleteFile('tmp.zip');
-      CentreText(11,'OK!',BRIGHTGREEN);
-    end
-    else
-    begin
-      PrintAt64(0,2,http.ResultString,BRIGHTRED);
-      InkeyW;
-      CentreText(11,'Press a key',BLACK);
-    end;
-  finally
-    http.Free;
+
+  http := TFPHttpClient.Create(nil);
+  http.RequestHeaders.Add('User-Agent: Mozilla/5.0 (X11; FreeBSD amd64; rv:103.0) Engine:Blink Firefox/103.0');
+  http.Get(url,'tmp.zip');
+  if (http.ResponseStatusCode >= 100) and (http.ResponseStatusCode <= 299) then
+  begin
+    ExtractFile('tmp.zip');
+    DeleteFile('tmp.zip');
+    CentreText(11,'OK!',BRIGHTGREEN);
+  end
+  else
+  begin
+    PrintAt64(0,2,http.ResponseStatusText,BRIGHTRED);
+    CentreText(14,http.ResponseStatusCode.ToString,BLACK);
+    CentreText(11,'Press a key',BLACK);
+    InkeyW;
   end;
+  http.Free;
 end;
 
 procedure SaveLog(s: String);
@@ -202,7 +202,7 @@ var
   s: String;
   keys: set of Char = ['1','Q',' ','O','D'];
 begin
-  if not DirectoryExists('.\tapes') then mkdir('.\tapes');
+  if not DirectoryExists('tapes') then mkdir('tapes');
   if not FileExists('zxdbdump.txt') then
   begin
     Border(2);
