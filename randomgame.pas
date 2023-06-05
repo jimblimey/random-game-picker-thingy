@@ -18,6 +18,7 @@ type
 var
   history: TStrings;
   TapeDir: String;
+  ConfigDir: String;
   // ~/Library/Application Support/MyApp/
 {$I 4x8font.inc}
   
@@ -108,12 +109,11 @@ end;
 
 procedure DownloadFile(url: String);
 var
-  //http: THTTPSend;
   http: TFPHttpClient;
 begin
   Cls(5);
   writeln(url);
-  PrintAt64(0,0,'Downloading '+url+'...',BRIGHTGREEN);
+  PrintAt64(0,0,'Downloading '+ExtractFilename(url)+'...',BRIGHTGREEN);
 
   http := TFPHttpClient.Create(nil);
   http.RequestHeaders.Add('User-Agent: Mozilla/5.0 (X11; FreeBSD amd64; rv:103.0) Engine:Blink Firefox/103.0');
@@ -292,11 +292,11 @@ end;
 begin
   Randomize;
 {$IFDEF Darwin}
-  TapeDir := GetUserDir + 'tapes/';
+  TapeDir := GetUserDir + 'RandomTapes/';
 {$ELSE}
   TapeDir := '.' + PathDelim + 'tapes' + PathDelim;
 {$ENDIF}
-  writeln(GetAppConfigDir(false));
+  ConfigDir := GetAppConfigDir(false);
   history := TStringList.Create;
   InitialiseWindow('Jim Blimey''s Random Game Picker Thingy');
   main;
