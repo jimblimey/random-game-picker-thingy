@@ -75,7 +75,7 @@ var
 begin
   uz := TUnZipper.Create;
   uz.FileName := fname;
-  uz.OutputPath := 'tapes';
+  uz.OutputPath := TapeDir;
   uz.Examine;
   uz.UnZipAllFiles;
   uz.Free;
@@ -103,7 +103,7 @@ begin
   if CheckHistory(id) then
   begin
     history.Add(id.ToString);
-    history.SaveToFile('history.txt');
+    history.SaveToFile(ConfigDir+'history.txt');
   end;
 end;
 
@@ -117,11 +117,11 @@ begin
 
   http := TFPHttpClient.Create(nil);
   http.RequestHeaders.Add('User-Agent: Mozilla/5.0 (X11; FreeBSD amd64; rv:103.0) Engine:Blink Firefox/103.0');
-  http.Get(url,'tmp.zip');
+  http.Get(url,TapeDir+'tmp.zip');
   if (http.ResponseStatusCode >= 100) and (http.ResponseStatusCode <= 299) then
   begin
-    ExtractFile('tmp.zip');
-    DeleteFile('tmp.zip');
+    ExtractFile(TapeDir+'tmp.zip');
+    DeleteFile(TapeDir+'tmp.zip');
     CentreText(11,'OK!',BRIGHTGREEN);
   end
   else
@@ -142,7 +142,7 @@ var
 begin
   fo := TStringList.Create;
   DateTimeToString(t,'yyyy-mm-dd',Now);
-  fn := 'log-' + t + '.txt';
+  fn := ConfigDir+'log-' + t + '.txt';
   if FileExists(fn) then fo.LoadFromFile(fn);
   fo.Add(s);
   fo.SaveToFile(fn);
@@ -183,7 +183,7 @@ begin
     PrintAt(0,11,'(K) Game count colour [14]',BLACK);
     PrintAt(0,12,'(K) ZXDB date  colour  [4]',BLACK);
     PrintAt(0,14,'(M) Save tapes location', BLACK);
-    PrintAt(0,15,'[.\tapes]',BLACK);
+    PrintAt(0,15,'['+TapeDir+']',BLACK);
     PrintAt(0,23,'(X) Exit (2) Games options',BLACK,false,true);
     UpdateScreen;
     c := InkeyW;
@@ -204,7 +204,6 @@ var
   s: String;
   keys: set of Char = ['1','Q',' ','O','D'];
 begin
-  if not DirectoryExists(TapeDir) then mkdir(TapeDir);
   if not FileExists('zxdbdump.txt') then
   begin
     Border(2);
@@ -215,7 +214,7 @@ begin
     c := InkeyW;
     exit;
   end;
-  if FileExists('history.txt') then history.LoadFromFile('history.txt');
+  if FileExists(ConfigDir+'history.txt') then history.LoadFromFile(ConfigDir+'history.txt');
   games := TList.Create;
   fi := TStringList.Create;
   fi.LoadFromFile('zxdbdump.txt');
@@ -297,6 +296,8 @@ begin
   TapeDir := '.' + PathDelim + 'tapes' + PathDelim;
 {$ENDIF}
   ConfigDir := GetAppConfigDir(false);
+  if not DirectoryExists(TapeDir) then mkdir(TapeDir);
+  if not DirectoryExists(ConfigDir) then mkdir(ConfigDir);
   history := TStringList.Create;
   InitialiseWindow('Jim Blimey''s Random Game Picker Thingy');
   main;
